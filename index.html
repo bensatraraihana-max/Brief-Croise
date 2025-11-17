@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="WorkSphere - Application de gestion visuelle du personnel">
+    <title>WorkSphere - Gestion du Personnel</title>
+    
+    <!-- Lien vers le fichier CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Conteneur principal -->
+    <div class="container">
+        <!-- Panneau latéral - Liste des employés non assignés -->
+        <aside class="sidebar">
+            <h2>Employés Non Assignés</h2>
+            <button class="add-button" id="addEmployeeBtn">+ Ajouter un Employé</button>
+            <div id="unassignedList"></div>
+        </aside>
+
+        <!-- Zone principale avec plan d'étage -->
+        <main class="main-content">
+            <h1>Plan d'Étage WorkSphere</h1>
+            <div class="floor-plan" id="floorPlan"></div>
+        </main>
+    </div>
+
+    <!-- Modale pour ajouter un employé -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ajouter un Employé</h2>
+                <button class="close-modal" id="closeAddModalBtn">×</button>
+            </div>
+            <form id="addEmployeeForm">
+                <div class="form-group">
+                    <label for="employeeName">Nom Complet</label>
+                    <input type="text" id="employeeName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="employeeRole">Rôle</label>
+                    <select id="employeeRole" required>
+                        <option value="">-- Sélectionner --</option>
+                        <option value="Réceptionniste">Réceptionniste</option>
+                        <option value="Technicien IT">Technicien IT</option>
+                        <option value="Agent de sécurité">Agent de sécurité</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Nettoyage">Nettoyage</option>
+                        <option value="Employé">Employé</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="employeeEmail">Email</label>
+                    <input type="email" id="employeeEmail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="employeePhone">Téléphone</label>
+                    <input type="tel" id="employeePhone" required>
+                </div>
+                
+                <button type="submit" class="submit-btn">Ajouter</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modale pour assigner un employé à une zone -->
+    <div id="assignModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Assigner un Employé</h2>
+                <button class="close-modal" id="closeAssignModalBtn">×</button>
+            </div>
+            <div id="assignList"></div>
+        </div>
+    </div>
+
+    <!-- Lien vers le fichier JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
