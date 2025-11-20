@@ -3,82 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="WorkSphere - Application de gestion visuelle du personnel">
+    <meta name="description" content="WorkSphere - Application de gestion visuelle et interactive du personnel">
+    <meta name="keywords" content="gestion personnel, plan étage, RH, WorkSphere">
+    <meta name="author" content="WorkSphere">
     <title>WorkSphere - Gestion du Personnel</title>
-    
-    <!-- Lien vers le fichier CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Conteneur principal -->
     <div class="container">
-        <!-- Panneau latéral - Liste des employés non assignés -->
-        <aside class="sidebar">
-            <h2>Employés Non Assignés</h2>
-            <button class="add-button" id="addEmployeeBtn">+ Ajouter un Employé</button>
-            <div id="unassignedList"></div>
-        </aside>
-
-        <!-- Zone principale avec plan d'étage -->
-        <main class="main-content">
-            <h1>Plan d'Étage WorkSphere</h1>
-            <div class="floor-plan" id="floorPlan"></div>
-        </main>
-    </div>
-
-    <!-- Modale pour ajouter un employé -->
-    <div id="addModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Ajouter un Employé</h2>
-                <button class="close-modal" id="closeAddModalBtn">×</button>
+        <!-- Header -->
+        <header>
+            <div class="header-left">
+                <h1>🏢 WorkSphere</h1>
+                <p class="subtitle">Gestion Interactive du Personnel</p>
             </div>
-            <form id="addEmployeeForm">
-                <div class="form-group">
-                    <label for="employeeName">Nom Complet</label>
-                    <input type="text" id="employeeName" required>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-icon">👥</span>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalEmployees">0</span>
+                        <span class="stat-label">Employés</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">📍</span>
+                    <div class="stat-info">
+                        <span class="stat-value" id="assignedCount">0</span>
+                        <span class="stat-label">Assignés</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h2>📋 Personnel Non Assigné</h2>
+                    <span class="badge" id="unassignedBadge">0</span>
                 </div>
                 
+                <button class="add-worker-btn" onclick="openAddModal()">
+                    <span>➕</span>
+                    Ajouter un Employé
+                </button>
+
+                <!-- Search & Filters -->
+                <div class="search-section">
+                    <div class="search-box-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-box" id="searchBox" 
+                               placeholder="Rechercher par nom ou rôle..." 
+                               oninput="filterEmployees()">
+                    </div>
+
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" onclick="filterByRole('', this)">Tous</button>
+                        <button class="filter-btn" onclick="filterByRole('Réceptionniste', this)">Réception</button>
+                        <button class="filter-btn" onclick="filterByRole('Technicien IT', this)">IT</button>
+                        <button class="filter-btn" onclick="filterByRole('Agent de sécurité', this)">Sécurité</button>
+                        <button class="filter-btn" onclick="filterByRole('Manager', this)">Manager</button>
+                        <button class="filter-btn" onclick="filterByRole('Nettoyage', this)">Nettoyage</button>
+                    </div>
+                </div>
+
+                <!-- Unassigned List -->
+                <div class="unassigned-list" id="unassignedList">
+                    <!-- Dynamically populated -->
+                </div>
+            </aside>
+
+            <!-- Floor Plan -->
+            <main class="floor-plan">
+                <div class="floor-plan-header">
+                    <h2>🏗️ Plan d'Étage</h2>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ff6b6b;"></div>
+                            <span>Zone obligatoire vide</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #51cf66;"></div>
+                            <span>Zone disponible</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zones Grid with Background -->
+                <div class="zones-wrapper">
+                    <div class="zones-background">
+                        <img src="plan.jpeg" alt="Plan d'étage" class="floor-plan-image">
+                    </div>
+                    <div class="zones-grid" id="zonesGrid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Employee Modal -->
+    <div class="modal" id="addModal">
+        <div class="modal-overlay" onclick="closeAddModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>➕ Ajouter un Employé</h2>
+                <button class="close-modal" onclick="closeAddModal()" aria-label="Fermer">×</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Photo Preview -->
+                <div class="photo-section">
+                    <img id="photoPreview" class="photo-preview" 
+                         src="https://via.placeholder.com/150/667eea/ffffff?text=Photo" 
+                         alt="Aperçu photo">
+                    <div class="form-group">
+                        <label for="photoUrl">Photo de profil (URL)</label>
+                        <input type="url" id="photoUrl" 
+                               placeholder="https://exemple.com/photo.jpg" 
+                               oninput="previewPhoto()">
+                    </div>
+                </div>
+
+                <!-- Employee Info -->
                 <div class="form-group">
-                    <label for="employeeRole">Rôle</label>
+                    <label for="employeeName">Nom complet *</label>
+                    <input type="text" id="employeeName" 
+                           placeholder="Ex: Jean Dupont" 
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="employeeRole">Rôle *</label>
                     <select id="employeeRole" required>
-                        <option value="">-- Sélectionner --</option>
+                        <option value="">Sélectionner un rôle</option>
                         <option value="Réceptionniste">Réceptionniste</option>
                         <option value="Technicien IT">Technicien IT</option>
                         <option value="Agent de sécurité">Agent de sécurité</option>
                         <option value="Manager">Manager</option>
                         <option value="Nettoyage">Nettoyage</option>
-                        <option value="Employé">Employé</option>
+                        <option value="Employé général">Employé général</option>
                     </select>
                 </div>
-                
-                <div class="form-group">
-                    <label for="employeeEmail">Email</label>
-                    <input type="email" id="employeeEmail" required>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="employeeEmail">Email</label>
+                        <input type="email" id="employeeEmail" 
+                               placeholder="email@exemple.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="employeePhone">Téléphone</label>
+                        <input type="tel" id="employeePhone" 
+                               placeholder="+212 6XX XXX XXX">
+                    </div>
                 </div>
-                
+
+                <!-- Experiences -->
                 <div class="form-group">
-                    <label for="employeePhone">Téléphone</label>
-                    <input type="tel" id="employeePhone" required>
+                    <label>Expériences professionnelles</label>
+                    <div id="experiencesList" class="experiences-container">
+                        <!-- Dynamically added -->
+                    </div>
+                    <button type="button" class="add-exp-btn" onclick="addExperienceField()">
+                        + Ajouter une expérience
+                    </button>
                 </div>
-                
-                <button type="submit" class="submit-btn">Ajouter</button>
-            </form>
+
+                <button class="submit-btn" onclick="addEmployee()">
+                    ✅ Ajouter l'Employé
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Modale pour assigner un employé à une zone -->
-    <div id="assignModal" class="modal">
+    <!-- Profile Modal -->
+    <div class="modal profile-modal" id="profileModal">
+        <div class="modal-overlay" onclick="closeProfileModal()"></div>
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Assigner un Employé</h2>
-                <button class="close-modal" id="closeAssignModalBtn">×</button>
+                <h2>👤 Profil Employé</h2>
+                <button class="close-modal" onclick="closeProfileModal()" aria-label="Fermer">×</button>
             </div>
-            <div id="assignList"></div>
+
+            <div class="modal-body">
+                <div class="profile-header">
+                    <img id="profileAvatar" class="profile-avatar" src="" alt="Avatar">
+                    <h3 id="profileName"></h3>
+                    <p id="profileRole" class="profile-role-badge"></p>
+                </div>
+
+                <div class="profile-info" id="profileDetails">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <div class="profile-actions">
+                    <button class="btn btn-danger" onclick="deleteEmployeeFromProfile()">
+                        🗑️ Supprimer l'employé
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Lien vers le fichier JavaScript -->
+    <!-- Select Employee Modal -->
+    <div class="modal" id="selectModal">
+        <div class="modal-overlay" onclick="closeSelectModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Sélectionner un Employé</h2>
+                <button class="close-modal" onclick="closeSelectModal()" aria-label="Fermer">×</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="select-list" id="selectList">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toastIcon"></span>
+        <span class="toast-message" id="toastMessage"></span>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
